@@ -9,4 +9,4 @@ colored = "3.0.0"
 regex = "1.11.1"
 reqwest = "0.12.12"
 scraper = "0.23.1"
-tokio = "1.43.0"
+tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros"] }
