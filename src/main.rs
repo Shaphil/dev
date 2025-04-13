@@ -1,5 +1,8 @@
+mod compilers;
+
 use clap::{Parser, Subcommand};
 use colored::*;
+use compilers::python;
 use regex::Regex;
 use reqwest;
 use scraper::{Html, Selector};
@@ -66,10 +69,10 @@ async fn main() {
             jfxver,
         } => {
             if all || pip {
-                install_pip();
+                python::install_pip();
             }
             if all || virtualenv {
-                install_virtualenv();
+                python::install_virtualenv();
             }
             if all || go {
                 install_go();
@@ -102,22 +105,6 @@ async fn main() {
             }
         }
     }
-}
-
-fn install_pip() {
-    println!("{}", "Installing Python pip...".blue());
-    run_command(&["sudo", "pacman", "-S", "python-pip"]);
-    run_command(&["pip", "--version"]);
-    println!("{}", "pip installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
-}
-
-fn install_virtualenv() {
-    println!("{}", "Installing Virtualenv...".blue());
-    run_command(&["pip", "install", "virtualenv", "--break-system-packages"]);
-    run_command(&["virtualenv", "--version"]);
-    println!("{}", "virtualenv installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_go() {
