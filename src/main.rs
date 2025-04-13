@@ -1,4 +1,5 @@
 mod compilers;
+mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
@@ -136,15 +137,15 @@ fn install_go() {
     println!("Downloading Go version: {} from {}", version, url);
 
     // Download the tarball
-    run_command(&["curl", "-L", "-o", &filename, &url]);
+    utils::run_command(&["curl", "-L", "-o", &filename, &url]);
 
     // Remove existing Go installation
     if Path::new("/usr/local/go").exists() {
-        run_command(&["sudo", "rm", "-rf", "/usr/local/go"]);
+        utils::run_command(&["sudo", "rm", "-rf", "/usr/local/go"]);
     }
 
     // Extract Go tarball
-    run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
+    utils::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
 
     // Clean up tarball
     if Path::new(&filename).exists() {
@@ -156,20 +157,20 @@ fn install_go() {
     let go_path_export = "export PATH=$PATH:/usr/local/go/bin";
 
     if !Path::new(profile_path).exists() {
-        run_command(&[
+        utils::run_command(&[
             "sudo",
             "bash",
             "-c",
             &format!("echo '{}' > {}", go_path_export, profile_path),
         ]);
-        run_command(&["sudo", "chmod", "+x", profile_path]);
+        utils::run_command(&["sudo", "chmod", "+x", profile_path]);
     }
 
     // Source the profile
-    run_command(&["bash", "-c", "source /etc/profile.d/go.sh"]);
+    utils::run_command(&["bash", "-c", "source /etc/profile.d/go.sh"]);
 
     // Verify the installation
-    run_command(&["go", "version"]);
+    utils::run_command(&["go", "version"]);
 
     println!("Go installation complete!");
     thread::sleep(time::Duration::from_secs(2));
@@ -206,13 +207,13 @@ fn install_jdk() {
             );
 
             // Download the JDK tarball
-            run_command(&["curl", "-O", &url]);
+            utils::run_command(&["curl", "-O", &url]);
 
             // Extract the tarball to /usr/local
-            run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
+            utils::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
 
             // Verify the installation
-            run_command(&["/usr/local/jdk/bin/java", "-version"]);
+            utils::run_command(&["/usr/local/jdk/bin/java", "-version"]);
 
             println!("{}", "JDK installation complete".blue());
             thread::sleep(time::Duration::from_secs(2));
@@ -281,8 +282,8 @@ async fn install_openjfx() {
                 version, filename
             );
 
-            run_command(&["curl", "-O", &url]);
-            run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
+            utils::run_command(&["curl", "-O", &url]);
+            utils::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
 
             println!("{}", "OpenJFX installation complete!".blue());
             // thread::sleep(time::Duration::from_secs(2));
@@ -298,8 +299,8 @@ async fn install_openjfx() {
 
 fn install_dotnet() {
     println!("{}", "Installing dotnet-sdk...".blue());
-    run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
-    run_command(&["dotnet", "--version"]);
+    utils::run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
+    utils::run_command(&["dotnet", "--version"]);
     println!("{}", "dotnet-sdk installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
 }
@@ -309,25 +310,25 @@ fn install_nodejs() {
         "{}",
         "Installing the Latest version of NodeJS and npm...".blue()
     );
-    run_command(&["sudo", "pacman", "-S", "nodejs", "npm"]);
-    run_command(&["node", "-v"]);
-    run_command(&["npm", "-v"]);
+    utils::run_command(&["sudo", "pacman", "-S", "nodejs", "npm"]);
+    utils::run_command(&["node", "-v"]);
+    utils::run_command(&["npm", "-v"]);
     println!("{}", "NodeJS (Latest) installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_yarn() {
     println!("{}", "Installing yarn...".blue());
-    run_command(&["npm", "config", "set", "prefix", "~/.npm-global"]);
-    run_command(&["npm", "install", "--global", "yarn"]);
-    run_command(&["yarn", "--version"]);
+    utils::run_command(&["npm", "config", "set", "prefix", "~/.npm-global"]);
+    utils::run_command(&["npm", "install", "--global", "yarn"]);
+    utils::run_command(&["yarn", "--version"]);
     println!("{}", "yarn installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_rust() {
     println!("{}", "Installing Rust toolchain".blue());
-    run_command(&[
+    utils::run_command(&[
         "curl",
         "--proto",
         "=https",
@@ -340,46 +341,27 @@ fn install_rust() {
         "--",
         "-y",
     ]);
-    run_command(&["rustc", "--version"]);
-    run_command(&["cargo", "--version"]);
+    utils::run_command(&["rustc", "--version"]);
+    utils::run_command(&["cargo", "--version"]);
     println!("{}", "Rust toolchain installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_docker() {
     println!("{}", "Installing Docker...".blue());
-    run_command(&[
+    utils::run_command(&[
         "curl",
         "-O",
         "https://desktop.docker.com/linux/main/amd64/docker-desktop-x86_64.pkg.tar.zst",
     ]);
-    run_command(&[
+    utils::run_command(&[
         "sudo",
         "pacman",
         "-U",
         "./docker-desktop-x86_64.pkg.tar.zst",
     ]);
-    run_command(&["docker", "version"]);
-    run_command(&["docker", "compose", "version"]);
+    utils::run_command(&["docker", "version"]);
+    utils::run_command(&["docker", "compose", "version"]);
     println!("{}", "Docker installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
-}
-
-fn run_command(command: &[&str]) {
-    let mut cmd = Command::new(command[0]);
-    cmd.args(&command[1..]);
-    match cmd.status() {
-        Ok(status) if status.success() => {
-            if command[0] != "curl" && command[0] != "sudo" {
-                let output = cmd.output().expect("failed to execute command");
-                println!("{}", String::from_utf8_lossy(&output.stdout));
-            }
-        }
-        Ok(status) => {
-            eprintln!("Command failed: {}", status);
-        }
-        Err(e) => {
-            eprintln!("Error running command: {}", e);
-        }
-    }
 }
