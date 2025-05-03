@@ -3,11 +3,7 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
-use compilers::{golang, python};
-use regex::Regex;
-use reqwest;
-use scraper::{Html, Selector};
-use std::process::Command;
+use compilers::{golang, java, python};
 use std::{thread, time};
 
 #[derive(Parser, Debug)]
@@ -19,6 +15,7 @@ struct Args {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    #[clap(about = "Install development tools. Use `dev install --help` for available options")]
     Install {
         #[clap(long, help = "Install pip")]
         pip: bool,
@@ -77,10 +74,10 @@ async fn main() {
                 golang::install_go();
             }
             if all || jdk {
-                install_jdk();
+                java::install_jdk();
             }
             if all || openjfx {
-                install_openjfx().await;
+                java::install_openjfx().await;
             }
             if all || dotnet {
                 install_dotnet();
@@ -98,131 +95,10 @@ async fn main() {
                 install_docker();
             }
             if all || jfxver {
-                get_latest_openjfx_version()
+                java::get_latest_openjfx_version()
                     .await
                     .expect("LOG: Failed to get OpenJFX version");
             }
-        }
-    }
-}
-
-fn install_jdk() {
-    println!("{}", "Installing Latest Java (JDK)...".blue());
-
-    // Fetch the Oracle Java Downloads page
-    let output = Command::new("curl")
-        .args(&[
-            "-s",
-            "https://www.oracle.com/bd/java/technologies/downloads/",
-        ])
-        .output()
-        .expect("Failed to fetch JDK download page");
-
-    let output_string = String::from_utf8_lossy(&output.stdout);
-
-    // Regex to extract the latest Java version from the specific line
-    let version_regex =
-        Regex::new(r"Java (\d+), Java \d+, and earlier versions available now").unwrap();
-
-    if let Some(captures) = version_regex.captures(&output_string) {
-        if let Some(version_match) = captures.get(1) {
-            let version = version_match.as_str();
-            println!("Installing Java (JDK) version: {}", version);
-
-            // Construct the download URL for the latest JDK
-            let filename = format!("jdk-{}_linux-x64_bin.tar.gz", version);
-            let url = format!(
-                "https://download.oracle.com/java/{}/latest/{}",
-                version, filename
-            );
-
-            // Download the JDK tarball
-            utils::run_command(&["curl", "-O", &url]);
-
-            // Extract the tarball to /usr/local
-            utils::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
-
-            // Verify the installation
-            utils::run_command(&["/usr/local/jdk/bin/java", "-version"]);
-
-            println!("{}", "JDK installation complete".blue());
-            thread::sleep(time::Duration::from_secs(2));
-        } else {
-            eprintln!("{}", "Error: Could not extract Java version.".red());
-        }
-    } else {
-        eprintln!(
-            "{}",
-            "Error: Could not find Java versions line on the page.".red()
-        );
-    }
-}
-
-async fn get_latest_openjfx_version() -> Result<Option<String>, reqwest::Error> {
-    let url = "https://gluonhq.com/products/javafx/";
-    let response = reqwest::get(url).await?;
-    if !response.status().is_success() {
-        return Ok(None);
-    }
-
-    let body = response.text().await?;
-    let document = Html::parse_document(&body);
-    let table_selector = Selector::parse("table#roadmap").unwrap();
-    let row_selector = Selector::parse("tr").unwrap();
-    let cell_selector = Selector::parse("td").unwrap();
-
-    if let Some(table) = document.select(&table_selector).next() {
-        for row in table.select(&row_selector) {
-            let cells: Vec<_> = row
-                .select(&cell_selector)
-                .map(|c| c.text().collect::<String>())
-                .collect();
-
-            if cells.len() > 2 {
-                let version_text = cells[2].trim().to_string();
-
-                if !version_text.contains("early access") {
-                    let version_number = version_text
-                        .split_whitespace()
-                        .next()
-                        .unwrap_or("")
-                        .to_string();
-
-                    return Ok(Some(version_number));
-                }
-            }
-        }
-    } else {
-        println!("Could not find roadmap table.");
-    }
-
-    Ok(None)
-}
-
-async fn install_openjfx() {
-    println!("{}", "Installing Latest OpenJFX...".blue());
-
-    match get_latest_openjfx_version().await {
-        Ok(Some(version)) => {
-            println!("Latest OpenJFX version: {}", version);
-
-            let filename = format!("openjfx-{}_linux-x64_bin-sdk.zip", version);
-            let url = format!(
-                "https://download2.gluonhq.com/openjfx/{}/{}",
-                version, filename
-            );
-
-            utils::run_command(&["curl", "-O", &url]);
-            utils::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
-
-            println!("{}", "OpenJFX installation complete!".blue());
-            // thread::sleep(time::Duration::from_secs(2));
-        }
-        Ok(None) => {
-            eprintln!("{}", "Error: Could not find latest OpenJFX version.".red());
-        }
-        Err(e) => {
-            eprintln!("Error fetching OpenJFX version: {}", e);
         }
     }
 }
