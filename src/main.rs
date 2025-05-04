@@ -39,9 +39,6 @@ enum Commands {
         docker: bool,
         #[clap(long, help = "Install all tools")]
         all: bool,
-
-        #[clap(long, help = "Get OpenJFX Version")]
-        jfxver: bool,
     },
 }
 
@@ -62,7 +59,6 @@ async fn main() {
             rust,
             docker,
             all,
-            jfxver,
         } => {
             if all || pip {
                 python::install_pip();
@@ -77,6 +73,7 @@ async fn main() {
                 java::install_jdk();
             }
             if all || openjfx {
+                // TODO: Check if `install_openjfx` really needs to `async`
                 java::install_openjfx().await;
             }
             if all || dotnet {
@@ -93,11 +90,6 @@ async fn main() {
             }
             if all || docker {
                 install_docker();
-            }
-            if all || jfxver {
-                java::get_latest_openjfx_version()
-                    .await
-                    .expect("LOG: Failed to get OpenJFX version");
             }
         }
     }
