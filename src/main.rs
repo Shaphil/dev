@@ -3,7 +3,7 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
-use compilers::{dotnet, golang, java, js, python};
+use compilers::{dotnet, golang, java, js, python, rust};
 use std::{thread, time};
 
 #[derive(Parser, Debug)]
@@ -85,34 +85,13 @@ async fn main() {
                 js::install_yarn();
             }
             if all || rust {
-                install_rust();
+                rust::install_rust();
             }
             if all || docker {
                 install_docker();
             }
         }
     }
-}
-
-fn install_rust() {
-    println!("{}", "Installing Rust toolchain".blue());
-    utils::run_command(&[
-        "curl",
-        "--proto",
-        "=https",
-        "--tlsv1.2",
-        "-sSf",
-        "https://sh.rustup.rs",
-        "|",
-        "sh",
-        "-s",
-        "--",
-        "-y",
-    ]);
-    utils::run_command(&["rustc", "--version"]);
-    utils::run_command(&["cargo", "--version"]);
-    println!("{}", "Rust toolchain installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_docker() {
