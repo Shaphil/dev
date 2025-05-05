@@ -3,7 +3,7 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
-use compilers::{dotnet, golang, java, python};
+use compilers::{dotnet, golang, java, js, python};
 use std::{thread, time};
 
 #[derive(Parser, Debug)]
@@ -79,10 +79,10 @@ async fn main() {
                 dotnet::install_dotnet();
             }
             if all || nodejs {
-                install_nodejs();
+                js::install_nodejs();
             }
             if all || yarn {
-                install_yarn();
+                js::install_yarn();
             }
             if all || rust {
                 install_rust();
@@ -92,27 +92,6 @@ async fn main() {
             }
         }
     }
-}
-
-fn install_nodejs() {
-    println!(
-        "{}",
-        "Installing the Latest version of NodeJS and npm...".blue()
-    );
-    utils::run_command(&["sudo", "pacman", "-S", "nodejs", "npm"]);
-    utils::run_command(&["node", "-v"]);
-    utils::run_command(&["npm", "-v"]);
-    println!("{}", "NodeJS (Latest) installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
-}
-
-fn install_yarn() {
-    println!("{}", "Installing yarn...".blue());
-    utils::run_command(&["npm", "config", "set", "prefix", "~/.npm-global"]);
-    utils::run_command(&["npm", "install", "--global", "yarn"]);
-    utils::run_command(&["yarn", "--version"]);
-    println!("{}", "yarn installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_rust() {
