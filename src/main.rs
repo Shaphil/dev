@@ -1,10 +1,10 @@
 mod compilers;
+mod devops;
 mod utils;
 
 use clap::{Parser, Subcommand};
-use colored::*;
 use compilers::{dotnet, golang, java, js, python, rust};
-use std::{thread, time};
+use devops::docker;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -88,27 +88,8 @@ async fn main() {
                 rust::install_rust();
             }
             if all || docker {
-                install_docker();
+                docker::install_docker();
             }
         }
     }
-}
-
-fn install_docker() {
-    println!("{}", "Installing Docker...".blue());
-    utils::run_command(&[
-        "curl",
-        "-O",
-        "https://desktop.docker.com/linux/main/amd64/docker-desktop-x86_64.pkg.tar.zst",
-    ]);
-    utils::run_command(&[
-        "sudo",
-        "pacman",
-        "-U",
-        "./docker-desktop-x86_64.pkg.tar.zst",
-    ]);
-    utils::run_command(&["docker", "version"]);
-    utils::run_command(&["docker", "compose", "version"]);
-    println!("{}", "Docker installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
 }
