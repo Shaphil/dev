@@ -3,7 +3,7 @@ mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
-use compilers::{golang, java, python};
+use compilers::{dotnet, golang, java, python};
 use std::{thread, time};
 
 #[derive(Parser, Debug)]
@@ -76,7 +76,7 @@ async fn main() {
                 java::install_openjfx();
             }
             if all || dotnet {
-                install_dotnet();
+                dotnet::install_dotnet();
             }
             if all || nodejs {
                 install_nodejs();
@@ -92,14 +92,6 @@ async fn main() {
             }
         }
     }
-}
-
-fn install_dotnet() {
-    println!("{}", "Installing dotnet-sdk...".blue());
-    utils::run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
-    utils::run_command(&["dotnet", "--version"]);
-    println!("{}", "dotnet-sdk installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
 }
 
 fn install_nodejs() {
