@@ -73,8 +73,7 @@ async fn main() {
                 java::install_jdk();
             }
             if all || openjfx {
-                // TODO: Check if `install_openjfx` really needs to `async`
-                java::install_openjfx().await;
+                java::install_openjfx();
             }
             if all || dotnet {
                 install_dotnet();

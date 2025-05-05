@@ -55,7 +55,7 @@ pub fn install_jdk() {
 }
 
 // TODO: Get version number manually and load from a `.env` or a `config.json` file
-pub async fn install_openjfx() {
+pub fn install_openjfx() {
     // TODO: move available versions to a `config.json` file
     let available_versions = vec!["24.0.1", "21.0.7", "17.0.15"];
     println!("{}", "Available JavaFX versions:".bold());
@@ -92,7 +92,7 @@ pub async fn install_openjfx() {
                 utils::run_command(&["curl", "-O", &url]);
                 utils::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
                 println!("{}", "OpenJFX installation complete!".blue());
-                // thread::sleep(time::Duration::from_secs(2));
+                thread::sleep(time::Duration::from_secs(2));
             }
             _ => {
                 println!("{}", "Invalid choice".red());
