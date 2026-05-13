@@ -2,7 +2,7 @@ mod compilers;
 mod devops;
 mod utils;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use compilers::{dotnet, golang, java, js, python, rust};
 use devops::docker;
 
@@ -15,31 +15,38 @@ struct Args {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    #[clap(about = "Install development tools. Use `dev install --help` for available options")]
+    /// Install development tools. Use `dev install --help` for available options
     Install {
-        #[clap(long, help = "Install pip")]
-        pip: bool,
-        #[clap(long, help = "Install virtualenv")]
-        virtualenv: bool,
-        #[clap(long, help = "Install Go")]
-        go: bool,
-        #[clap(long, help = "Install JDK")]
-        jdk: bool,
-        #[clap(long, help = "Install OpenJFX")]
-        openjfx: bool,
-        #[clap(long, help = "Install dotnet-sdk")]
-        dotnet: bool,
-        #[clap(long, help = "Install NodeJS and npm")]
-        nodejs: bool,
-        #[clap(long, help = "Install yarn")]
-        yarn: bool,
-        #[clap(long, help = "Install Rust")]
-        rust: bool,
-        #[clap(long, help = "Install Docker")]
-        docker: bool,
-        #[clap(long, help = "Install all tools")]
-        all: bool,
+        /// The tool to install
+        #[arg(value_enum, num_args = 1.., required = true)]
+        tools: Vec<Tool>,
     },
+}
+
+#[derive(ValueEnum, Clone, Debug, PartialEq)]
+enum Tool {
+    /// Install pip
+    Pip,
+    /// Install virtualenv
+    Virtualenv,
+    /// Install Go
+    Go,
+    /// Install JDK
+    Jdk,
+    /// Install OpenJFX
+    Openjfx,
+    /// Install dotnet-sdk
+    Dotnet,
+    /// Install NodeJS and npm
+    Nodejs,
+    /// Install yarn
+    Yarn,
+    /// Install Rust
+    Rust,
+    /// Install Docker
+    Docker,
+    /// Install all tools
+    All,
 }
 
 #[tokio::main]
@@ -47,48 +54,39 @@ async fn main() {
     let args = Args::parse();
 
     match args.command {
-        Commands::Install {
-            pip,
-            virtualenv,
-            go,
-            jdk,
-            openjfx,
-            dotnet,
-            nodejs,
-            yarn,
-            rust,
-            docker,
-            all,
-        } => {
-            if all || pip {
-                python::install_pip();
-            }
-            if all || virtualenv {
-                python::install_virtualenv();
-            }
-            if all || go {
-                golang::install_go();
-            }
-            if all || jdk {
-                java::install_jdk();
-            }
-            if all || openjfx {
-                java::install_openjfx();
-            }
-            if all || dotnet {
-                dotnet::install_dotnet();
-            }
-            if all || nodejs {
-                js::install_nodejs();
-            }
-            if all || yarn {
-                js::install_yarn();
-            }
-            if all || rust {
-                rust::install_rust();
-            }
-            if all || docker {
-                docker::install_docker();
+        Commands::Install { tools } => {
+            let tools_to_install = if tools.contains(&Tool::All) {
+                vec![
+                    Tool::Pip,
+                    Tool::Virtualenv,
+                    Tool::Go,
+                    Tool::Jdk,
+                    Tool::Openjfx,
+                    Tool::Dotnet,
+                    Tool::Nodejs,
+                    Tool::Yarn,
+                    Tool::Rust,
+                    Tool::Docker,
+                ]
+            } else {
+                tools
+            };
+
+            // Loop through and install each one
+            for t in tools_to_install {
+                match t {
+                    Tool::Pip => python::install_pip(),
+                    Tool::Virtualenv => python::install_virtualenv(),
+                    Tool::Go => golang::install_go(),
+                    Tool::Jdk => java::install_jdk(),
+                    Tool::Openjfx => java::install_openjfx(),
+                    Tool::Dotnet => dotnet::install_dotnet(),
+                    Tool::Nodejs => js::install_nodejs(),
+                    Tool::Yarn => js::install_yarn(),
+                    Tool::Rust => rust::install_rust(),
+                    Tool::Docker => docker::install_docker(),
+                    Tool::All => unreachable!(),
+                }
             }
         }
     }

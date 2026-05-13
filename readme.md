@@ -66,26 +66,37 @@ output of running `dev install --help` in a terminal,
 ```bash
 Install development tools. Use `dev install --help` for available options
 
-Usage: dev install [OPTIONS]
+Usage: dev install <TOOL>
+
+Arguments:
+  <TOOL>
+          The tool to install
+
+          Possible values:
+          - pip:        Install pip
+          - virtualenv: Install virtualenv
+          - go:         Install Go
+          - jdk:        Install JDK
+          - openjfx:    Install OpenJFX
+          - dotnet:     Install dotnet-sdk
+          - nodejs:     Install NodeJS and npm
+          - yarn:       Install yarn
+          - rust:       Install Rust
+          - docker:     Install Docker
+          - all:        Install all tools
 
 Options:
-      --pip         Install pip
-      --virtualenv  Install virtualenv
-      --go          Install Go
-      --jdk         Install JDK
-      --openjfx     Install OpenJFX
-      --dotnet      Install dotnet-sdk
-      --nodejs      Install NodeJS and npm
-      --yarn        Install yarn
-      --rust        Install Rust
-      --docker      Install Docker
-      --all         Install all tools
-  -h, --help        Print help
+  -h, --help
+          Print help (see a summary with '-h')
 ```
 
-For installing a particular tool, you'll pass the related flag to `dev install`. To install `pip` for example, you'll
-type `dev install --pip`, and to install all the tools you can use the `--all` flag, like `dev install --all`. You can
-also chain multiple flags together, like, `dev install --pip --go` to install `pip` and `go`.
+## Breaking change
+
+* Previously to install `pip`, you needed this `dev install --pip`
+* Now, you can install `pip` with `dev install pip`
+* You can still chain commands for installing tools like before with a slight change,
+    * before: `dev install --pip --go`
+    * now: `dev install pip go`
 
 Please note that, if `dev` needs to download something (a tarball for instance), it will download that from the
 directory/location from which it was invoked. It will not automatically clean up the leftover archives after
