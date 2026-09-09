@@ -1,5 +1,6 @@
 mod compilers;
 mod devops;
+mod misc;
 mod utils;
 
 use clap::{Parser, Subcommand, ValueEnum};
@@ -45,6 +46,8 @@ enum Tool {
     Rust,
     /// Install Docker
     Docker,
+    /// Nerd Fonts
+    Nerdfonts,
     /// Install all tools
     All,
 }
@@ -67,6 +70,7 @@ async fn main() {
                     Tool::Yarn,
                     Tool::Rust,
                     Tool::Docker,
+                    Tool::Nerdfonts,
                 ]
             } else {
                 tools
@@ -85,6 +89,7 @@ async fn main() {
                     Tool::Yarn => js::install_yarn(),
                     Tool::Rust => rust::install_rust(),
                     Tool::Docker => docker::install_docker(),
+                    Tool::Nerdfonts => misc::nerd_fonts::install_nerd_fonts(),
                     Tool::All => unreachable!(),
                 }
             }
