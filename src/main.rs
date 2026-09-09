@@ -6,6 +6,7 @@ mod utils;
 use clap::{Parser, Subcommand, ValueEnum};
 use compilers::{dotnet, golang, java, js, python, rust};
 use devops::docker;
+use misc::nerd_fonts;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -89,7 +90,7 @@ async fn main() {
                     Tool::Yarn => js::install_yarn(),
                     Tool::Rust => rust::install_rust(),
                     Tool::Docker => docker::install_docker(),
-                    Tool::Nerdfonts => misc::nerd_fonts::install_nerd_fonts(),
+                    Tool::Nerdfonts => nerd_fonts::install_nerd_fonts(),
                     Tool::All => unreachable!(),
                 }
             }
