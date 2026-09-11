@@ -37,19 +37,23 @@ pub fn sleep(secs: u64) {
 
 pub struct DevTool {
     tool: String,
-    installer: String,
+    executor: String,
     description: String,
     is_sudo: bool,
 }
 
 impl DevTool {
-    pub fn new(tool: String, installer: String, description: String, is_sudo: bool) -> Self {
+    pub fn new(tool: String, executor: String, description: String, is_sudo: bool) -> Self {
         Self {
             tool,
-            installer,
+            executor,
             description,
             is_sudo,
         }
+    }
+
+    pub fn download(&mut self, url: &str) {
+        run_command(&["curl", "-O", url]);
     }
 
     pub fn install(&mut self) {
@@ -63,12 +67,12 @@ impl DevTool {
         if self.is_sudo {
             status = run_command(&[
                 "sudo",
-                &self.installer.to_string(),
+                &self.executor.to_string(),
                 "-S",
                 &self.tool.to_string(),
             ]);
         } else {
-            status = run_command(&[&self.installer.to_string(), "-S", &self.tool.to_string()]);
+            status = run_command(&[&self.executor.to_string(), "-S", &self.tool.to_string()]);
         }
         print_status(&self.tool.to_string(), status);
         sleep(2);
