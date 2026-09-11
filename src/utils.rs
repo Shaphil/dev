@@ -2,12 +2,12 @@ use colored::Colorize;
 use std::process::Command;
 use std::{thread, time};
 
-pub enum CommandStatus {
+pub enum CommandExecutionStatus {
     SUCCEEDED,
     FAILED,
 }
 
-pub fn run_command(command: &[&str]) -> CommandStatus {
+pub fn run_command(command: &[&str]) -> CommandExecutionStatus {
     let mut cmd = Command::new(command[0]);
     cmd.args(&command[1..]);
     match cmd.status() {
@@ -16,21 +16,76 @@ pub fn run_command(command: &[&str]) -> CommandStatus {
                 let output = cmd.output().expect("failed to execute command");
                 println!("{}", String::from_utf8_lossy(&output.stdout).green());
             }
-            CommandStatus::SUCCEEDED
+            CommandExecutionStatus::SUCCEEDED
         }
         Ok(status) => {
             let output = format!("Command failed: {}", status);
             eprintln!("{}", output.red());
-            CommandStatus::FAILED
+            CommandExecutionStatus::FAILED
         }
         Err(e) => {
             let output = format!("Error running command: {}", e);
             eprintln!("{}", output.red());
-            CommandStatus::FAILED
+            CommandExecutionStatus::FAILED
         }
     }
 }
 
 pub fn sleep(secs: u64) {
     thread::sleep(time::Duration::from_secs(secs));
+}
+
+pub struct DevTool {
+    tool: String,
+    installer: String,
+    description: String,
+    is_sudo: bool,
+}
+
+impl DevTool {
+    pub fn new(tool: String, installer: String, description: String, is_sudo: bool) -> Self {
+        Self {
+            tool,
+            installer,
+            description,
+            is_sudo,
+        }
+    }
+
+    pub fn install(&mut self) {
+        println!(
+            "{} {} {}",
+            "Installing".blue(),
+            self.tool.blue().bold(),
+            self.description.blue()
+        );
+        let status;
+        if self.is_sudo {
+            status = run_command(&[
+                "sudo",
+                &self.installer.to_string(),
+                "-S",
+                &self.tool.to_string(),
+            ]);
+        } else {
+            status = run_command(&[&self.installer.to_string(), "-S", &self.tool.to_string()]);
+        }
+        print_status(&self.tool.to_string(), status);
+        sleep(2);
+    }
+}
+
+fn print_status(tool: &str, status: CommandExecutionStatus) {
+    match status {
+        CommandExecutionStatus::SUCCEEDED => {
+            println!(
+                "{} {}",
+                tool.green().bold(),
+                "installation complete".green()
+            )
+        }
+        CommandExecutionStatus::FAILED => {
+            println!("{} {}", tool.green().bold(), "installation failed".red())
+        }
+    }
 }
