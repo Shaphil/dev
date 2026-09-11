@@ -52,8 +52,12 @@ impl DevTool {
         }
     }
 
-    pub fn download(&mut self, url: &str) {
-        run_command(&["curl", "-O", url]);
+    // pub fn download(&mut self, url: &str) {
+    //     run_command(&["curl", "-O", url]);
+    // }
+
+    pub fn custom_install(&mut self, cmd: &str) {
+        run_command(&["bash", "-c", cmd]);
     }
 
     pub fn install(&mut self) {
