@@ -7,3 +7,4 @@ edition = "2024"
 clap = { version = "4.6.6", features = ["derive"] }
 colored = "3.1.1"
 tokio = { version = "1.53.1", features = ["rt", "rt-multi-thread", "macros"] }
+dirs = "7.0.0"
