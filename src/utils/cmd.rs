@@ -1,3 +1,4 @@
+use crate::utils::logger;
 use colored::Colorize;
 use std::process::Command;
 use std::{thread, time};
@@ -56,17 +57,25 @@ impl DevTool {
     //     run_command(&["curl", "-O", url]);
     // }
 
-    pub fn custom_install(&mut self, cmd: &str) {
-        run_command(&["bash", "-c", cmd]);
-    }
-
-    pub fn install(&mut self) {
-        println!(
+    fn print_installation_info(&mut self) {
+        let message = format!(
             "{} {} {}",
             "Installing".blue(),
             self.tool.blue().bold(),
             self.description.blue()
         );
+        logger::info(&message);
+    }
+
+    pub fn custom_install(&mut self, cmd: &str) {
+        self.print_installation_info();
+        let status = run_command(&["bash", "-c", cmd]);
+        print_status(&self.tool.to_string(), status);
+        sleep(2);
+    }
+
+    pub fn install(&mut self) {
+        self.print_installation_info();
         let status;
         if self.is_sudo {
             status = run_command(&[
@@ -78,6 +87,7 @@ impl DevTool {
         } else {
             status = run_command(&[&self.executor.to_string(), "-S", &self.tool.to_string()]);
         }
+
         print_status(&self.tool.to_string(), status);
         sleep(2);
     }
@@ -86,14 +96,16 @@ impl DevTool {
 fn print_status(tool: &str, status: CommandExecutionStatus) {
     match status {
         CommandExecutionStatus::SUCCEEDED => {
-            println!(
+            let message = format!(
                 "{} {}",
                 tool.green().bold(),
                 "installation complete".green()
-            )
+            );
+            logger::success(&message);
         }
         CommandExecutionStatus::FAILED => {
-            println!("{} {}", tool.green().bold(), "installation failed".red())
+            let message = format!("{} {}", tool.green().bold(), "installation failed".red());
+            logger::error(&message);
         }
     }
 }
