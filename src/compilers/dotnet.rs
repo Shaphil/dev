@@ -1,4 +1,4 @@
-use crate::utils;
+use crate::utils::cmd;
 use colored::Colorize;
 use std::{thread, time};
 
@@ -8,8 +8,8 @@ use std::{thread, time};
 // and, https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 pub fn install_dotnet() {
     println!("{}", "Installing dotnet-sdk...".blue());
-    utils::run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
-    utils::run_command(&["dotnet", "--version"]);
+    cmd::run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
+    cmd::run_command(&["dotnet", "--version"]);
     println!("{}", "dotnet-sdk installation complete".blue());
     thread::sleep(time::Duration::from_secs(2));
 }

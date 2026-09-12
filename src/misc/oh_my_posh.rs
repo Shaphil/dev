@@ -1,4 +1,4 @@
-use crate::utils::DevTool;
+use crate::utils::cmd::DevTool;
 
 pub fn install_oh_my_posh() {
     // curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/bin

@@ -1,4 +1,4 @@
-use crate::utils::DevTool;
+use crate::utils::cmd::DevTool;
 
 pub fn install_nerd_fonts() {
     // install package manager `yay`
@@ -17,4 +17,3 @@ pub fn install_nerd_fonts() {
     dev_tool = DevTool::new(tool, executor, description, is_sudo);
     dev_tool.install();
 }
-

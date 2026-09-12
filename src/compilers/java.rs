@@ -1,4 +1,4 @@
-use crate::utils;
+use crate::utils::cmd;
 use colored::Colorize;
 use std::io::Write;
 use std::{io, thread, time};
@@ -36,10 +36,10 @@ pub fn install_jdk() {
 
                 println!("Downloading: {}", url);
 
-                utils::run_command(&["curl", "-O", &url]);
-                utils::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
+                cmd::run_command(&["curl", "-O", &url]);
+                cmd::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
 
-                utils::run_command(&["/usr/local/jdk/bin/java", "-version"]);
+                cmd::run_command(&["/usr/local/jdk/bin/java", "-version"]);
 
                 println!("{}", "JDK installation complete".blue());
                 thread::sleep(time::Duration::from_secs(2));
@@ -89,8 +89,8 @@ pub fn install_openjfx() {
                 println!("filename: {}", filename);
                 println!("URL: {}", url);
 
-                utils::run_command(&["curl", "-O", &url]);
-                utils::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
+                cmd::run_command(&["curl", "-O", &url]);
+                cmd::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
                 println!("{}", "OpenJFX installation complete!".blue());
                 thread::sleep(time::Duration::from_secs(2));
             }

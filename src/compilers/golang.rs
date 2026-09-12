@@ -1,7 +1,7 @@
-use std::process::Command;
+use crate::utils::cmd;
 use std::path::Path;
+use std::process::Command;
 use std::{fs, thread, time};
-use crate::utils;
 
 pub fn install_go() {
     println!("Installing Latest Go...");
@@ -32,15 +32,15 @@ pub fn install_go() {
     println!("Downloading Go version: {} from {}", version, url);
 
     // Download the tarball
-    utils::run_command(&["curl", "-L", "-o", &filename, &url]);
+    cmd::run_command(&["curl", "-L", "-o", &filename, &url]);
 
     // Remove existing Go installation
     if Path::new("/usr/local/go").exists() {
-        utils::run_command(&["sudo", "rm", "-rf", "/usr/local/go"]);
+        cmd::run_command(&["sudo", "rm", "-rf", "/usr/local/go"]);
     }
 
     // Extract Go tarball
-    utils::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
+    cmd::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
 
     // Clean up tarball
     if Path::new(&filename).exists() {
@@ -52,20 +52,20 @@ pub fn install_go() {
     let go_path_export = "export PATH=$PATH:/usr/local/go/bin";
 
     if !Path::new(profile_path).exists() {
-        utils::run_command(&[
+        cmd::run_command(&[
             "sudo",
             "bash",
             "-c",
             &format!("echo '{}' > {}", go_path_export, profile_path),
         ]);
-        utils::run_command(&["sudo", "chmod", "+x", profile_path]);
+        cmd::run_command(&["sudo", "chmod", "+x", profile_path]);
     }
 
     // Source the profile
-    utils::run_command(&["bash", "-c", "source /etc/profile.d/go.sh"]);
+    cmd::run_command(&["bash", "-c", "source /etc/profile.d/go.sh"]);
 
     // Verify the installation
-    utils::run_command(&["go", "version"]);
+    cmd::run_command(&["go", "version"]);
 
     println!("Go installation complete!");
     thread::sleep(time::Duration::from_secs(2));
