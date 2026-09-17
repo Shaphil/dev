@@ -57,8 +57,9 @@ enum Tool {
 
 #[tokio::main]
 async fn main() {
-    let args = Args::parse();
+    dotenvy::dotenv().ok();
 
+    let args = Args::parse();
     match args.command {
         Commands::Install { tools } => {
             let tools_to_install = if tools.contains(&Tool::All) {
