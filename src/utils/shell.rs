@@ -1,4 +1,5 @@
 use crate::utils::logger;
+use colored::Colorize;
 use std::collections::HashSet;
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
@@ -34,7 +35,7 @@ pub fn append_to_shell_config(
         .open(&rc_path)?;
 
     writeln!(file, "{}", config)?;
-    println!("Successfully updated {}", rc_filename);
+    logger::info(&format!("Successfully updated {}", rc_filename));
 
     Ok(())
 }
@@ -50,8 +51,8 @@ pub fn config_already_exists(
         return Ok(false);
     }
 
-    let file = std::fs::File::open(&rc_path)?;
-    let reader = std::io::BufReader::new(file);
+    let file = fs::File::open(&rc_path)?;
+    let reader = BufReader::new(file);
 
     for line_result in reader.lines() {
         let line = line_result?;
@@ -64,7 +65,10 @@ pub fn config_already_exists(
     Ok(false)
 }
 
-pub fn update_shell_configs(config: &str, anchor: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn update_shell_configs(
+    config: &str,
+    anchor: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
     let home = dirs::home_dir().ok_or("Could not find home directory")?;
     let rc_files = [".bashrc", ".zshrc"];
 
@@ -78,12 +82,14 @@ pub fn update_shell_configs(config: &str, anchor: &str) -> Result<(), Box<dyn st
 
         // 2. Guard clause: Skip if the config anchor is already there
         if config_already_exists(anchor, rc_file)? {
-            continue;
+            return Ok("config already exists in `.zshrc|.bashrc`"
+                .blue()
+                .to_string());
         }
 
         // 3. If missing, append it
         append_to_shell_config(config, rc_file)?;
     }
 
-    Ok(())
+    Ok("added to `.zshrc|.bashrc`".green().to_string())
 }

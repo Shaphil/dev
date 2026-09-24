@@ -1,6 +1,7 @@
 use crate::utils::cmd::DevTool;
 use crate::utils::logger;
 use crate::utils::shell::update_shell_configs;
+use colored::Colorize;
 
 pub fn install_lsd() {
     let tool = "LSD".to_string();
@@ -12,15 +13,11 @@ pub fn install_lsd() {
     devtool.custom_install(cmd);
 
     let anchor = "lsd";
-    let config_lines = [
-        "\n",
-        "alias la='lsd -la'",
-        "alias ll='lsd -l'"
-    ];
+    let config_lines = ["\n", "alias la='lsd -la'", "alias ll='lsd -l'"];
     let config = config_lines.join("\n");
 
     match update_shell_configs(&config, anchor) {
-        Ok(_) => logger::success(&format!("{} added to `.zshrc|.bashrc`", tool)),
+        Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
         Err(err) => logger::warning(&format!(
             "Failed to add {} to `.zshrc|.bashrc`: {}",
             tool, err

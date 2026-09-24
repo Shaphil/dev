@@ -98,7 +98,7 @@ fn print_status(tool: &str, status: CommandExecutionStatus) {
         CommandExecutionStatus::SUCCEEDED => {
             let message = format!(
                 "{} {}",
-                tool.green().bold(),
+                tool.yellow().bold(),
                 "installation complete".green()
             );
             logger::success(&message);
