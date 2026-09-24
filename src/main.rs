@@ -6,7 +6,7 @@ mod utils;
 use clap::{Parser, Subcommand, ValueEnum};
 use compilers::{dotnet, golang, java, js, python, rust};
 use devops::docker;
-use misc::{nerd_fonts, oh_my_posh};
+use misc::{lsd, nerd_fonts, oh_my_posh};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -47,10 +47,12 @@ enum Tool {
     Rust,
     /// Install Docker
     Docker,
-    /// Nerd Fonts
+    /// Install Nerd Fonts
     Nerdfonts,
-    /// Oh-my-posh
+    /// Install oh-my-posh
     OhMyPosh,
+    /// Install lsd
+    Lsd,
     /// Install all tools
     All,
 }
@@ -76,6 +78,7 @@ async fn main() {
                     Tool::Docker,
                     Tool::Nerdfonts,
                     Tool::OhMyPosh,
+                    Tool::Lsd,
                 ]
             } else {
                 tools
@@ -96,6 +99,7 @@ async fn main() {
                     Tool::Docker => docker::install_docker(),
                     Tool::Nerdfonts => nerd_fonts::install_nerd_fonts(),
                     Tool::OhMyPosh => oh_my_posh::install_oh_my_posh(),
+                    Tool::Lsd => lsd::install_lsd(),
                     Tool::All => unreachable!(),
                 }
             }
