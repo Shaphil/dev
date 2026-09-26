@@ -67,9 +67,16 @@ impl DevTool {
         logger::info(&message);
     }
 
-    pub fn custom_install(&mut self, cmd: &str) {
+    pub fn run(&mut self, cmd: &str) {
         self.print_installation_info();
-        let status = run_command(&["bash", "-c", cmd]);
+
+        let status;
+        if self.is_sudo {
+            status = run_command(&["sudo", "bash", "-c", cmd]);
+        } else {
+            status = run_command(&["bash", "-c", cmd]);
+        }
+
         print_status(&self.tool.to_string(), status);
         sleep(2);
     }

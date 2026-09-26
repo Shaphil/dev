@@ -10,7 +10,7 @@ pub fn install_lsd() {
     let is_root = false;
     let cmd = "cargo install lsd";
     let mut devtool = DevTool::new(tool.clone(), executor, description, is_root);
-    devtool.custom_install(cmd);
+    devtool.run(cmd);
 
     let anchor = "lsd";
     let config_lines = ["\n", "alias la='lsd -la'", "alias ll='lsd -l'"];

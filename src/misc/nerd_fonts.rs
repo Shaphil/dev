@@ -28,5 +28,5 @@ pub fn install_nerd_fonts() {
     );
 
     let mut dev_tool = DevTool::new(tool, executor, description, is_sudo);
-    dev_tool.custom_install(&cmd);
+    dev_tool.run(&cmd);
 }
