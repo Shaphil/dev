@@ -1,15 +1,37 @@
-use crate::utils::cmd;
+use crate::utils::cmd::DevTool;
+use crate::utils::logger;
+use crate::utils::shell::update_shell_configs;
 use colored::Colorize;
-use std::{thread, time};
 
-// TODO: install from tarballs, e.g. `dotnet-sdk-9.0.203-linux-x64.tar.gz`
-// TODO: available from `https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.203/dotnet-sdk-9.0.203-linux-x64.tar.gz`
-// More: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
-// and, https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 pub fn install_dotnet() {
-    println!("{}", "Installing dotnet-sdk...".blue());
-    cmd::run_command(&["sudo", "pamac", "install", "dotnet-sdk"]);
-    cmd::run_command(&["dotnet", "--version"]);
-    println!("{}", "dotnet-sdk installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
+    let tool = "DotNET".to_string();
+    let description = "SDK (LTS)".to_string();
+
+    let cmd = "\
+        mkdir -p ~/.dotnet && \
+        curl -sSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh && \
+        chmod +x dotnet-install.sh && \
+        ./dotnet-install.sh --channel LTS --install-dir ~/.dotnet && \
+        rm dotnet-install.sh";
+
+    let mut dev_tool = DevTool::new(tool.clone(), "sh -c".to_string(), description, false);
+    dev_tool.run(cmd);
+
+    let anchor = "DOTNET_ROOT";
+    let config = [
+        "\n",
+        "# .NET Environment Variables",
+        "export DOTNET_ROOT=\"$HOME/.dotnet\"",
+        "export PATH=\"$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH\"",
+    ]
+    .join("\n");
+
+    match update_shell_configs(&config, anchor) {
+        Ok(msg) => logger::success(&format!("{} {}", tool.purple().bold(), msg)),
+        Err(err) => logger::warning(&format!(
+            "Failed to add {} config to `.zshrc|.bashrc`: {}",
+            tool.yellow().bold(),
+            err
+        )),
+    }
 }
