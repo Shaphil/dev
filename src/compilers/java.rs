@@ -1,20 +1,42 @@
-use crate::utils::cmd;
+use crate::utils::cmd::DevTool;
+use crate::utils::shell::update_shell_configs;
+use crate::utils::{cmd, logger};
 use colored::Colorize;
 use std::io::Write;
+use std::process::Command;
 use std::{io, thread, time};
 
-// TODO: Get version number manually and load from a `.env` or a `config.json` file
 pub fn install_jdk() {
-    // TODO: move available versions to a `config.json` file
-    let available_versions = vec!["23.0.2", "21"];
+    // Dynamically fetch available LTS versions from Adoptium API
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("curl -s https://api.adoptium.net/v3/info/available_releases | jq -r '.available_lts_releases[]'")
+        .output();
+
+    let available_versions: Vec<String> = match output {
+        Ok(res) if res.status.success() => {
+            let stdout = String::from_utf8_lossy(&res.stdout);
+            stdout
+                .lines()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        }
+        _ => {
+            // Fallback jq fails
+            vec!["21".to_string(), "25".to_string()]
+        }
+    };
+
     println!("{}", "Available JDK versions:".bold());
     for (index, version) in available_versions.iter().enumerate() {
-        println!("{}. {}", index + 1, version);
+        println!("{}. JDK {}", index + 1, version);
     }
 
+    let selected_version;
     loop {
         print!("{}", "Please choose a version to install: ".bold());
-        io::stdout().flush().unwrap(); // ensure the prompt is displayed
+        io::stdout().flush().unwrap();
 
         let mut input = String::new();
         io::stdin()
@@ -24,33 +46,67 @@ pub fn install_jdk() {
         let input = input.trim();
         match input.parse::<usize>() {
             Ok(version) if (1..=available_versions.len()).contains(&version) => {
-                let selected_version = available_versions[version - 1];
+                selected_version = &available_versions[version - 1];
                 println!("{} {}", "Installing JDK version:".blue(), selected_version);
 
-                let filename = format!("jdk-{}_linux-x64_bin.tar.gz", selected_version);
+                // Use the Adoptium API URL pattern instead of Oracle's tarball link
                 let url = format!(
-                    "https://download.oracle.com/java/{}/latest/{}",
-                    selected_version.split(".").next().unwrap(),
-                    filename
+                    "https://api.adoptium.net/v3/binary/latest/{}/ga/linux/x64/jdk/hotspot/normal/eclipse",
+                    selected_version
                 );
 
                 println!("Downloading: {}", url);
 
-                cmd::run_command(&["curl", "-O", &url]);
-                cmd::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
+                let cmd = format!(
+                    "mkdir -p ~/.local/opt && \
+                     curl -sL {} -o openjdk.tar.gz && \
+                     tar -xzf openjdk.tar.gz -C ~/.local/opt/ && \
+                     rm -rf ~/.local/opt/java && \
+                     mv ~/.local/opt/jdk-* ~/.local/opt/java && \
+                     rm openjdk.tar.gz",
+                    url
+                );
 
-                cmd::run_command(&["/usr/local/jdk/bin/java", "-version"]);
+                let mut dev_tool = DevTool::new(
+                    format!("OpenJDK-{}", selected_version),
+                    "sh -c".to_string(),
+                    "Eclipse Temurin OpenJDK".to_string(),
+                    false,
+                );
+                dev_tool.run(&cmd);
 
                 println!("{}", "JDK installation complete".blue());
                 thread::sleep(time::Duration::from_secs(2));
+                break;
             }
-            Ok(_) | Err(_) => {
+            _ => {
                 println!(
                     "{}",
                     "Invalid choice. Please enter a number from the list.".red()
                 );
             }
         }
+    }
+    // Configure JAVA_HOME and PATH in shell configuration files
+    let anchor = "JAVA_HOME";
+    let config_lines = [
+        "\n",
+        "# Java Environment Variables",
+        "export JAVA_HOME=\"$HOME/.local/opt/java\"",
+        "export PATH=\"$JAVA_HOME/bin:$PATH\"",
+    ];
+    let config = config_lines.join("\n");
+
+    match update_shell_configs(&config, anchor) {
+        Ok(msg) => logger::success(&format!(
+            "{} {}",
+            format!("OpenJDK-{}", selected_version).yellow().bold(),
+            msg
+        )),
+        Err(err) => logger::warning(&format!(
+            "Failed to add Java config to `.zshrc|.bashrc`: {}",
+            err
+        )),
     }
 }
 
