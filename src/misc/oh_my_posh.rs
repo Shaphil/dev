@@ -1,7 +1,7 @@
 use crate::utils::cmd::DevTool;
 use crate::utils::logger;
 use crate::utils::shell::update_shell_configs;
-use std::fs;
+use colored::Colorize;
 
 pub fn install_oh_my_posh() {
     let tool = "ohMyPosh".to_string();
@@ -24,7 +24,7 @@ pub fn install_oh_my_posh() {
     let config = config_lines.join("\n");
 
     match update_shell_configs(&config, anchor) {
-        Ok(_) => logger::success(&format!("{} added to `.zshrc|.bashrc`", tool)),
+        Ok(msg) => logger::success(&format!("{} {}", tool.purple().bold(), msg)),
         Err(err) => logger::warning(&format!(
             "Failed to add {} to `.zshrc|.bashrc`: {}",
             tool, err
