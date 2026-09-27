@@ -13,7 +13,12 @@ pub fn install_lsd() {
     devtool.run(cmd);
 
     let anchor = "lsd";
-    let config_lines = ["\n", "alias la='lsd -la'", "alias ll='lsd -l'"];
+    let config_lines = [
+        "\n",
+        "# LSD - ls deluxe",
+        "alias la='lsd -la'",
+        "alias ll='lsd -l'",
+    ];
     let config = config_lines.join("\n");
 
     match update_shell_configs(&config, anchor) {

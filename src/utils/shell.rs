@@ -35,7 +35,11 @@ pub fn append_to_shell_config(
         .open(&rc_path)?;
 
     writeln!(file, "{}", config)?;
-    logger::info(&format!("Successfully updated {}", rc_filename));
+    logger::info(&format!(
+        "{} {}",
+        "Successfully updated".blue(),
+        rc_filename.blue().italic()
+    ));
 
     Ok(())
 }
