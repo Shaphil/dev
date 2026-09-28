@@ -1,8 +1,7 @@
-use crate::utils::cmd::DevTool;
+use crate::utils::cmd::{CommandExecutionStatus, DevTool};
 use crate::utils::shell::update_shell_configs;
 use crate::utils::{cmd, logger};
 use colored::Colorize;
-use std::{thread, time};
 
 pub fn install_nodejs() {
     let tool = "nodejs".to_string();
@@ -42,10 +41,43 @@ pub fn install_nodejs() {
 }
 
 pub fn install_yarn() {
-    println!("{}", "Installing yarn...".blue());
-    cmd::run_command(&["npm", "config", "set", "prefix", "~/.npm-global"]);
-    cmd::run_command(&["npm", "install", "--global", "yarn"]);
-    cmd::run_command(&["yarn", "--version"]);
-    println!("{}", "yarn installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
+    let status = cmd::run_command(&["npm", "-v"]);
+    match status {
+        CommandExecutionStatus::SUCCEEDED => {
+            let tool = "yarn".to_string();
+            let description = "package manager via npm".to_string();
+            let is_sudo = false;
+
+            let mut dev_tool = DevTool::new(tool.clone(), "".to_string(), description, is_sudo);
+
+            // Commands to install `yarn` via `npm`
+            let cmd = "\
+                npm config set prefix '~/.npm-global' && \
+                npm install --global yarn && \
+                yarn --version";
+
+            dev_tool.run(cmd);
+
+            // Add `~/.npm-global/bin` to PATH
+            let anchor = "npm-global";
+            let config_lines = [
+                "",
+                "# NPM Global Binaries & Yarn",
+                "export PATH=\"$HOME/.npm-global/bin:$PATH\"",
+            ];
+            let config = config_lines.join("\n");
+
+            match update_shell_configs(&config, anchor) {
+                Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
+                Err(err) => logger::warning(&format!(
+                    "Failed to add {} to `.zshrc|.bashrc`: {}",
+                    tool, err
+                )),
+            }
+        }
+        CommandExecutionStatus::FAILED => {
+            logger::error("npm not found. Installing Node & npm");
+            install_nodejs();
+        }
+    }
 }
