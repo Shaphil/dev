@@ -93,7 +93,7 @@ async fn main() {
                     Tool::Pip => python::install_pip(),
                     Tool::Uv => python::install_uv(),
                     Tool::Virtualenv => python::install_virtualenv(),
-                    Tool::Go => golang::install_go(),
+                    Tool::Go => golang::install_golang(),
                     Tool::Jdk => java::install_jdk(),
                     Tool::Openjfx => java::install_openjfx(),
                     Tool::Dotnet => dotnet::install_dotnet(),

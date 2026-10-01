@@ -1,72 +1,40 @@
-use crate::utils::cmd;
-use std::path::Path;
-use std::process::Command;
-use std::{fs, thread, time};
+use crate::utils::cmd::DevTool;
+use crate::utils::logger;
+use crate::utils::shell::update_shell_configs;
+use colored::Colorize;
 
-pub fn install_go() {
-    println!("Installing Latest Go...");
+pub fn install_golang() {
+    let tool = "Go".to_string();
+    let description = "programming language".to_string();
 
-    // Fetch the latest Go version
-    let version_output = Command::new("curl")
-        .args(&["-s", "https://go.dev/VERSION?m=text"])
-        .output()
-        .expect("Failed to get Go version");
+    // Fetches the latest Go version dynamically from the official API
+    let cmd = "\
+        mkdir -p ~/.local/opt ~/.go/bin && \
+        GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n 1) && \
+        echo \"Downloading Go version: $GO_VERSION\" && \
+        curl -sL https://golang.org/dl/$GO_VERSION.linux-amd64.tar.gz -o go.tar.gz && \
+        rm -rf ~/.local/opt/go && \
+        tar -C ~/.local/opt -xzf go.tar.gz && \
+        rm go.tar.gz";
 
-    let version_string = String::from_utf8_lossy(&version_output.stdout);
+    let mut dev_tool = DevTool::new(tool.clone(), "sh -c".to_string(), description, false);
+    dev_tool.run(cmd);
 
-    // Extract only the first line, which contains the version number
-    let version = version_string
-        .lines()
-        .next()
-        .unwrap_or("")
-        .trim()
-        .to_string();
+    let anchor = "GOLANG";
+    let config = [
+        "",
+        "# Go Environment Variables",
+        "export PATH=\"$HOME/.local/opt/go/bin:$PATH\"",
+        "export GOPATH=\"$HOME/go\"",
+        "export PATH=\"$GOPATH/bin:$PATH\"",
+    ]
+    .join("\n");
 
-    if !version.starts_with("go") {
-        panic!("Invalid Go version string received: {}", version);
+    match update_shell_configs(&config, anchor) {
+        Ok(msg) => logger::success(&format!("{} {}", tool.cyan().bold(), msg)),
+        Err(err) => logger::warning(&format!(
+            "Failed to add {} to `.zshrc|.bashrc`: {}",
+            tool, err
+        )),
     }
-
-    let filename = format!("{}.linux-amd64.tar.gz", version);
-    let url = format!("https://dl.google.com/go/{}", filename);
-
-    println!("Downloading Go version: {} from {}", version, url);
-
-    // Download the tarball
-    cmd::run_command(&["curl", "-L", "-o", &filename, &url]);
-
-    // Remove existing Go installation
-    if Path::new("/usr/local/go").exists() {
-        cmd::run_command(&["sudo", "rm", "-rf", "/usr/local/go"]);
-    }
-
-    // Extract Go tarball
-    cmd::run_command(&["sudo", "tar", "-C", "/usr/local", "-xzf", &filename]);
-
-    // Clean up tarball
-    if Path::new(&filename).exists() {
-        fs::remove_file(&filename).expect("Failed to remove tarball");
-    }
-
-    // Set up Go environment variables
-    let profile_path = "/etc/profile.d/go.sh";
-    let go_path_export = "export PATH=$PATH:/usr/local/go/bin";
-
-    if !Path::new(profile_path).exists() {
-        cmd::run_command(&[
-            "sudo",
-            "bash",
-            "-c",
-            &format!("echo '{}' > {}", go_path_export, profile_path),
-        ]);
-        cmd::run_command(&["sudo", "chmod", "+x", profile_path]);
-    }
-
-    // Source the profile
-    cmd::run_command(&["bash", "-c", "source /etc/profile.d/go.sh"]);
-
-    // Verify the installation
-    cmd::run_command(&["go", "version"]);
-
-    println!("Go installation complete!");
-    thread::sleep(time::Duration::from_secs(2));
 }
