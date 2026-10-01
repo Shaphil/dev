@@ -11,22 +11,34 @@ pub enum CommandExecutionStatus {
 pub fn run_command(command: &[&str]) -> CommandExecutionStatus {
     let mut cmd = Command::new(command[0]);
     cmd.args(&command[1..]);
-    match cmd.status() {
-        Ok(status) if status.success() => {
-            if command[0] != "curl" && command[0] != "sudo" {
-                let output = cmd.output().expect("failed to execute command");
-                println!("{}", String::from_utf8_lossy(&output.stdout).green());
+
+    match cmd.output() {
+        Ok(output) if output.status.success() => {
+            let stdout_str = String::from_utf8_lossy(&output.stdout);
+
+            if !stdout_str.is_empty() {
+                if command[0] != "curl" && command[0] != "sudo" {
+                    logger::success(&*stdout_str)
+                } else {
+                    logger::info(&*stdout_str);
+                }
             }
+
             CommandExecutionStatus::SUCCEEDED
         }
-        Ok(status) => {
-            let output = format!("Command failed: {}", status);
-            eprintln!("{}", output.red());
+        Ok(output) => {
+            let err_str = String::from_utf8_lossy(&output.stderr);
+            let msg = if err_str.is_empty() {
+                format!("Command failed with exit code: {}", output.status)
+            } else {
+                format!("Command failed: {}", err_str)
+            };
+            logger::error(&*msg);
             CommandExecutionStatus::FAILED
         }
         Err(e) => {
             let output = format!("Error running command: {}", e);
-            eprintln!("{}", output.red());
+            logger::error(&*output);
             CommandExecutionStatus::FAILED
         }
     }
@@ -79,6 +91,10 @@ impl DevTool {
 
         print_status(&self.tool.to_string(), status);
         sleep(2);
+    }
+
+    pub fn check(&mut self, cmd: &str) {
+        let _ = run_command(&["bash", "-c", cmd]);
     }
 
     pub fn install(&mut self) {
