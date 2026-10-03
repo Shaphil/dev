@@ -27,12 +27,10 @@ enum Commands {
 
 #[derive(ValueEnum, Clone, Debug, PartialEq)]
 enum Tool {
-    /// Install pip
-    Pip,
+    /// Install Python Tools (pip, virtualenv)
+    PythonTools,
     /// Install uv
     Uv,
-    /// Install virtualenv
-    Virtualenv,
     /// Install Go
     Go,
     /// Install JDK
@@ -68,9 +66,8 @@ async fn main() {
         Commands::Install { tools } => {
             let tools_to_install = if tools.contains(&Tool::All) {
                 vec![
-                    Tool::Pip,
+                    Tool::PythonTools,
                     Tool::Uv,
-                    Tool::Virtualenv,
                     Tool::Go,
                     Tool::Jdk,
                     Tool::Openjfx,
@@ -90,9 +87,8 @@ async fn main() {
             // Loop through and install each one
             for t in tools_to_install {
                 match t {
-                    Tool::Pip => python::install_pip(),
+                    Tool::PythonTools => python::install_python_tools(),
                     Tool::Uv => python::install_uv(),
-                    Tool::Virtualenv => python::install_virtualenv(),
                     Tool::Go => golang::install_golang(),
                     Tool::Jdk => java::install_jdk(),
                     Tool::Openjfx => java::install_openjfx(),
