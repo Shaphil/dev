@@ -20,7 +20,7 @@ pub fn install_golang() {
     let mut dev_tool = DevTool::new(tool.clone(), "sh -c".to_string(), description, false);
     dev_tool.run(cmd);
 
-    let anchor = "GOLANG";
+    let anchor = "Go";
     let config = [
         "",
         "# Go Environment Variables",

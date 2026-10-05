@@ -88,9 +88,9 @@ pub fn install_jdk() {
         }
     }
     // Configure JAVA_HOME and PATH in shell configuration files
-    let anchor = "JAVA_HOME";
+    let anchor = "Java";
     let config_lines = [
-        "\n",
+        "",
         "# Java Environment Variables",
         "export JAVA_HOME=\"$HOME/.local/opt/java\"",
         "export PATH=\"$JAVA_HOME/bin:$PATH\"",

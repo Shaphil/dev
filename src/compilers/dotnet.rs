@@ -17,9 +17,9 @@ pub fn install_dotnet() {
     let mut dev_tool = DevTool::new(tool.clone(), "sh -c".to_string(), description, false);
     dev_tool.run(cmd);
 
-    let anchor = "DOTNET_ROOT";
+    let anchor = ".NET";
     let config = [
-        "\n",
+        "",
         "# .NET Environment Variables",
         "export DOTNET_ROOT=\"$HOME/.dotnet\"",
         "export PATH=\"$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH\"",

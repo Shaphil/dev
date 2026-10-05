@@ -21,7 +21,7 @@ pub fn install_nodejs() {
     let mut dev_tool = DevTool::new(tool.clone(), "sh -c".to_string(), description, false);
     dev_tool.run(cmd);
 
-    let anchor = "NODE_HOME";
+    let anchor = "Node.js";
     let config = [
         "",
         "# Node.js Environment Variables",
@@ -59,7 +59,7 @@ pub fn install_yarn() {
             dev_tool.run(cmd);
 
             // Add `~/.npm-global/bin` to PATH
-            let anchor = "npm-global";
+            let anchor = "NPM";
             let config_lines = [
                 "",
                 "# NPM Global Binaries & Yarn",

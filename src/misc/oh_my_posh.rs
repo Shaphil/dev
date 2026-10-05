@@ -16,9 +16,9 @@ pub fn install_oh_my_posh() {
     // Disable Manjaro's default system-level powerlevel10k prompt (requires sudo)
     disable_manjaro_p10k_system();
 
-    let anchor = "oh-my-posh init";
+    let anchor = "oh-my-posh";
     let config_lines = [
-        "# Oh-my-posh, with `jandedobbeleer` theme",
+        "# oh-my-posh, with `jandedobbeleer` theme",
         "eval \"$(oh-my-posh init zsh --config ~/.cache/oh-my-posh/themes/jandedobbeleer.omp.json)\"",
     ];
     let config = config_lines.join("\n");

@@ -10,7 +10,7 @@ pub fn install_python_tools() {
     let executor = "sh -c".to_string();
     let is_sudo = false;
 
-    // Use ensurepip first, fallback to get-pip.py if stripped by distro, then install virtualenv
+    // install with get-pip.py if stripped by distro, then install virtualenv
     let cmd = "\
     curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python get-pip.py --user --break-system-packages && \
@@ -22,7 +22,7 @@ pub fn install_python_tools() {
     dev_tool.run(cmd);
 
     // Add ~/.local/bin to PATH so pip/virtualenv binaries are accessible
-    let anchor = "Python Tools";
+    let anchor = "Python";
     let config_lines = [
         "",
         "# Python Tools (pip, virtualenv)",

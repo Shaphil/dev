@@ -12,9 +12,9 @@ pub fn install_lsd() {
     let mut devtool = DevTool::new(tool.clone(), executor, description, is_root);
     devtool.run(cmd);
 
-    let anchor = "lsd";
+    let anchor = "LSD";
     let config_lines = [
-        "\n",
+        "",
         "# LSD - ls deluxe",
         "alias la='lsd -la'",
         "alias ll='lsd -l'",
