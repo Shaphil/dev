@@ -1,13 +1,36 @@
-use crate::utils::cmd;
+use crate::utils::cmd::DevTool;
+use crate::utils::logger;
+use crate::utils::shell::update_shell_configs;
 use colored::Colorize;
-use std::{thread, time};
 
 pub fn install_rust() {
-    println!("{}", "Installing Rust toolchain".blue());
-    let command = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y";
-    cmd::run_command(&["sh", "-c", command]);
-    cmd::run_command(&["rustc", "--version"]);
-    cmd::run_command(&["cargo", "--version"]);
-    println!("{}", "Rust toolchain installation complete".blue());
-    thread::sleep(time::Duration::from_secs(2));
+    let tool = "Rust".to_string();
+    let executor = "curl".to_string();
+    let description = "toolchain".to_string();
+    let is_sudo = false;
+    let mut dev_tool = DevTool::new(tool.clone(), executor, description, is_sudo);
+
+    let cmd = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y";
+    dev_tool.run(cmd);
+
+    // Add ~/.local/bin to PATH so pip/virtualenv binaries are accessible
+    let anchor = "Rust";
+    let config_lines = [
+        "",                            // empty line
+        "# Rust -> Cargo",             // Toolchain ID
+        "source \"$HOME/.cargo/env\"", // config
+    ];
+    let config = config_lines.join("\n");
+
+    match update_shell_configs(&config, anchor) {
+        Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
+        Err(err) => logger::warning(&format!(
+            "Failed to add {} to shell config: {}",
+            tool.yellow().bold(),
+            err
+        )),
+    }
+
+    dev_tool.check("rustc --version");
+    dev_tool.check("cargo --version");
 }
