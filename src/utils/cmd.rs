@@ -69,7 +69,7 @@ impl DevTool {
     //     run_command(&["curl", "-O", url]);
     // }
 
-    fn print_installation_info(&mut self) {
+    fn print_installation_info(&self) {
         let message = format!(
             "{} {} {}",
             "Installing".blue(),
@@ -89,7 +89,7 @@ impl DevTool {
             status = run_command(&["bash", "-c", cmd]);
         }
 
-        print_status(&self.tool.to_string(), status);
+        self.print_status(status);
         sleep(2);
     }
 
@@ -111,24 +111,28 @@ impl DevTool {
             status = run_command(&[&self.executor.to_string(), "-S", &self.tool.to_string()]);
         }
 
-        print_status(&self.tool.to_string(), status);
+        self.print_status(status);
         sleep(2);
     }
-}
 
-fn print_status(tool: &str, status: CommandExecutionStatus) {
-    match status {
-        CommandExecutionStatus::SUCCEEDED => {
-            let message = format!(
-                "{} {}",
-                tool.yellow().bold(),
-                "installation complete".green()
-            );
-            logger::success(&message);
-        }
-        CommandExecutionStatus::FAILED => {
-            let message = format!("{} {}", tool.green().bold(), "installation failed".red());
-            logger::error(&message);
+    pub fn print_status(&self, status: CommandExecutionStatus) {
+        match status {
+            CommandExecutionStatus::SUCCEEDED => {
+                let message = format!(
+                    "{} {}",
+                    self.tool.yellow().bold(),
+                    "installation complete".green()
+                );
+                logger::success(&message);
+            }
+            CommandExecutionStatus::FAILED => {
+                let message = format!(
+                    "{} {}",
+                    self.tool.yellow().bold(),
+                    "installation failed".red()
+                );
+                logger::error(&message);
+            }
         }
     }
 }
