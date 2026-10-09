@@ -69,7 +69,21 @@ async fn main() {
     match args.command {
         Commands::Install { tools, unattended } => {
             let tools_to_install = if tools.contains(&Tool::All) {
-                vec![Tool::Jdk]
+                vec![
+                    Tool::PythonTools,
+                    Tool::Uv,
+                    Tool::Go,
+                    Tool::Jdk,
+                    Tool::Openjfx,
+                    Tool::Dotnet,
+                    Tool::Nodejs,
+                    Tool::Yarn,
+                    Tool::Rust,
+                    Tool::Docker,
+                    Tool::Nerdfonts,
+                    Tool::OhMyPosh,
+                    Tool::Lsd,
+                ]
             } else {
                 tools
             };
