@@ -1,4 +1,5 @@
 use crate::utils::logger;
+use crate::utils::shell::update_shell_configs;
 use colored::Colorize;
 use std::process::Command;
 use std::{thread, time};
@@ -115,7 +116,7 @@ impl DevTool {
         sleep(2);
     }
 
-    pub fn print_status(&self, status: CommandExecutionStatus) {
+    fn print_status(&self, status: CommandExecutionStatus) {
         match status {
             CommandExecutionStatus::SUCCEEDED => {
                 let message = format!(
@@ -133,6 +134,17 @@ impl DevTool {
                 );
                 logger::error(&message);
             }
+        }
+    }
+
+    pub fn update_shell(&mut self, config: String, anchor: &str) {
+        match update_shell_configs(&config, anchor) {
+            Ok(msg) => logger::success(&format!("{} {}", self.tool.purple().bold(), msg)),
+            Err(err) => logger::warning(&format!(
+                "Failed to add {} config to `.zshrc|.bashrc`: {}",
+                self.tool.yellow().bold(),
+                err
+            )),
         }
     }
 }
