@@ -22,6 +22,10 @@ enum Commands {
         /// The tool to install
         #[arg(value_enum, num_args = 1.., required = true)]
         tools: Vec<Tool>,
+
+        /// Run installations in unattended mode (auto-selects latest versions without prompts)
+        #[arg(short, long)]
+        unattended: bool,
     },
 }
 
@@ -63,23 +67,9 @@ async fn main() {
 
     let args = Args::parse();
     match args.command {
-        Commands::Install { tools } => {
+        Commands::Install { tools, unattended } => {
             let tools_to_install = if tools.contains(&Tool::All) {
-                vec![
-                    Tool::PythonTools,
-                    Tool::Uv,
-                    Tool::Go,
-                    Tool::Jdk,
-                    Tool::Openjfx,
-                    Tool::Dotnet,
-                    Tool::Nodejs,
-                    Tool::Yarn,
-                    Tool::Rust,
-                    Tool::Docker,
-                    Tool::Nerdfonts,
-                    Tool::OhMyPosh,
-                    Tool::Lsd,
-                ]
+                vec![Tool::Jdk]
             } else {
                 tools
             };
@@ -90,7 +80,7 @@ async fn main() {
                     Tool::PythonTools => python::install_python_tools(),
                     Tool::Uv => python::install_uv(),
                     Tool::Go => golang::install_golang(),
-                    Tool::Jdk => java::install_jdk(),
+                    Tool::Jdk => java::install_jdk(unattended), // <--- Pass the flag here!
                     Tool::Openjfx => java::install_openjfx(),
                     Tool::Dotnet => dotnet::install_dotnet(),
                     Tool::Nodejs => js::install_nodejs(),
