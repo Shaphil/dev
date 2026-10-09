@@ -1,7 +1,4 @@
 use crate::utils::cmd::DevTool;
-use crate::utils::logger;
-use crate::utils::shell::update_shell_configs;
-use colored::Colorize;
 
 pub fn install_oh_my_posh() {
     let tool = "ohMyPosh".to_string();
@@ -18,18 +15,12 @@ pub fn install_oh_my_posh() {
 
     let anchor = "oh-my-posh";
     let config_lines = [
+        "",
         "# oh-my-posh, with `jandedobbeleer` theme",
         "eval \"$(oh-my-posh init zsh --config ~/.cache/oh-my-posh/themes/jandedobbeleer.omp.json)\"",
     ];
     let config = config_lines.join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.purple().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add {} to `.zshrc|.bashrc`: {}",
-            tool, err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
 }
 
 /// Safely comment out the p10k source line in the global Manjaro prompt config using sed

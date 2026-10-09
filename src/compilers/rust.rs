@@ -1,7 +1,4 @@
 use crate::utils::cmd::DevTool;
-use crate::utils::logger;
-use crate::utils::shell::update_shell_configs;
-use colored::Colorize;
 
 pub fn install_rust() {
     let tool = "Rust".to_string();
@@ -21,16 +18,9 @@ pub fn install_rust() {
         "source \"$HOME/.cargo/env\"", // config
     ];
     let config = config_lines.join("\n");
+    dev_tool.update_shell(config, anchor);
 
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add {} to shell config: {}",
-            tool.yellow().bold(),
-            err
-        )),
-    }
-
+    // check versions
     dev_tool.check("rustc --version");
     dev_tool.check("cargo --version");
 }

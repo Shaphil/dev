@@ -1,11 +1,9 @@
 use crate::utils::cmd::{CommandExecutionStatus, DevTool};
-use crate::utils::shell::update_shell_configs;
 use crate::utils::{cmd, logger};
-use colored::Colorize;
 
 pub fn install_nodejs() {
-    let tool = "nodejs".to_string();
-    let description = "Node.js LTS Runtime".to_string();
+    let tool = "Node.js LTS".to_string();
+    let description = "Runtime".to_string();
 
     // Pull the latest LTS version dynamically from the Nodejs metadata index
     let cmd = "\
@@ -29,18 +27,13 @@ pub fn install_nodejs() {
         "export PATH=\"$NODE_HOME/bin:$PATH\"",
     ]
     .join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add {} config to `.zshrc|.bashrc`: {}",
-            tool.yellow().bold(),
-            err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
+    dev_tool.check("node -v");
+    dev_tool.check("npm -v");
 }
 
 pub fn install_yarn() {
+    logger::info("Checking for npm installation...");
     let status = cmd::run_command(&["npm", "-v"]);
     match status {
         CommandExecutionStatus::SUCCEEDED => {
@@ -66,14 +59,8 @@ pub fn install_yarn() {
                 "export PATH=\"$HOME/.npm-global/bin:$PATH\"",
             ];
             let config = config_lines.join("\n");
-
-            match update_shell_configs(&config, anchor) {
-                Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
-                Err(err) => logger::warning(&format!(
-                    "Failed to add {} to `.zshrc|.bashrc`: {}",
-                    tool, err
-                )),
-            }
+            dev_tool.update_shell(config, anchor);
+            dev_tool.check("yarn -v");
         }
         CommandExecutionStatus::FAILED => {
             logger::error("npm not found. Installing Node & npm");

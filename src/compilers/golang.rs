@@ -1,7 +1,4 @@
 use crate::utils::cmd::DevTool;
-use crate::utils::logger;
-use crate::utils::shell::update_shell_configs;
-use colored::Colorize;
 
 pub fn install_golang() {
     let tool = "Go".to_string();
@@ -29,12 +26,6 @@ pub fn install_golang() {
         "export PATH=\"$GOPATH/bin:$PATH\"",
     ]
     .join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.cyan().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add {} to `.zshrc|.bashrc`: {}",
-            tool, err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
+    dev_tool.check("go version");
 }

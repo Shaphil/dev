@@ -1,8 +1,4 @@
-use colored::Colorize;
-
 use crate::utils::cmd::DevTool;
-use crate::utils::logger;
-use crate::utils::shell::update_shell_configs;
 
 pub fn install_python_tools() {
     let tool = "Python Tools".to_string();
@@ -29,14 +25,7 @@ pub fn install_python_tools() {
         "export PATH=\"$HOME/.local/bin:$PATH\"",
     ];
     let config = config_lines.join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.yellow().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add Python local bin to shell config: {}",
-            err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
 
     // 3. Verify installations
     dev_tool.check("pip --version");

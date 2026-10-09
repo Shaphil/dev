@@ -1,6 +1,5 @@
+use crate::utils::cmd;
 use crate::utils::cmd::DevTool;
-use crate::utils::shell::update_shell_configs;
-use crate::utils::{cmd, logger};
 use colored::Colorize;
 use std::io::Write;
 use std::process::Command;
@@ -34,6 +33,8 @@ pub fn install_jdk() {
     }
 
     let selected_version;
+    let tool;
+    let mut dev_tool;
     loop {
         print!("{}", "Please choose a version to install: ".bold());
         io::stdout().flush().unwrap();
@@ -54,9 +55,9 @@ pub fn install_jdk() {
                     "https://api.adoptium.net/v3/binary/latest/{}/ga/linux/x64/jdk/hotspot/normal/eclipse",
                     selected_version
                 );
-
                 println!("Downloading: {}", url);
 
+                tool = format!("OpenJDK-{}", selected_version);
                 let cmd = format!(
                     "mkdir -p ~/.local/opt && \
                      curl -sL {} -o openjdk.tar.gz && \
@@ -67,8 +68,8 @@ pub fn install_jdk() {
                     url
                 );
 
-                let mut dev_tool = DevTool::new(
-                    format!("OpenJDK-{}", selected_version),
+                dev_tool = DevTool::new(
+                    tool.clone(),
                     "sh -c".to_string(),
                     "Eclipse Temurin OpenJDK".to_string(),
                     false,
@@ -96,18 +97,8 @@ pub fn install_jdk() {
         "export PATH=\"$JAVA_HOME/bin:$PATH\"",
     ];
     let config = config_lines.join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!(
-            "{} {}",
-            format!("OpenJDK-{}", selected_version).yellow().bold(),
-            msg
-        )),
-        Err(err) => logger::warning(&format!(
-            "Failed to add Java config to `.zshrc|.bashrc`: {}",
-            err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
+    dev_tool.check("javac -version");
 }
 
 // TODO: Get version number manually and load from a `.env` or a `config.json` file

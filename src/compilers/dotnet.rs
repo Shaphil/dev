@@ -1,10 +1,7 @@
 use crate::utils::cmd::DevTool;
-use crate::utils::logger;
-use crate::utils::shell::update_shell_configs;
-use colored::Colorize;
 
 pub fn install_dotnet() {
-    let tool = "DotNET".to_string();
+    let tool = "DotNET Core".to_string();
     let description = "SDK (LTS)".to_string();
 
     let cmd = "\
@@ -25,13 +22,6 @@ pub fn install_dotnet() {
         "export PATH=\"$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH\"",
     ]
     .join("\n");
-
-    match update_shell_configs(&config, anchor) {
-        Ok(msg) => logger::success(&format!("{} {}", tool.purple().bold(), msg)),
-        Err(err) => logger::warning(&format!(
-            "Failed to add {} config to `.zshrc|.bashrc`: {}",
-            tool.yellow().bold(),
-            err
-        )),
-    }
+    dev_tool.update_shell(config, anchor);
+    dev_tool.check("dotnet --version");
 }
