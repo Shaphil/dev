@@ -53,43 +53,86 @@ pub fn install_nerd_fonts(unattended: bool) {
         }
     }
 
-    let cmd = if is_all {
-        logger::info("Preparing to download the full Nerd Fonts suite (~10GB)...");
-        format!(
-            "export GH_TOKEN={} && \
-             curl -s https://raw.githubusercontent.com/ryanoasis/nerd-fonts/master/install.sh -o install.sh && \
-             chmod u+x install.sh && \
-             ./install.sh install all && \
-             rm install.sh",
-            github_token
-        )
+    if is_all {
+        logger::info("Preparing to download the full Nerd Fonts suite (~10GB equivalent)...");
+
+        // 1. Create directory
+        let mut setup_tool = DevTool::new(
+            "NerdFonts-Setup".to_string(),
+            "sh -c".to_string(),
+            "Nerd Fonts".to_string(),
+            false,
+        );
+        setup_tool.run("mkdir -p ~/.local/share/fonts/NerdFonts");
+
+        // 2. Loop through all fonts with live logging
+        for (i, font) in AVAILABLE_FONTS.iter().enumerate() {
+            logger::info(&format!(
+                "[{}/{}] Downloading {}...",
+                i + 1,
+                AVAILABLE_FONTS.len(),
+                font
+            ));
+
+            let zip_name = format!("{}.zip", font);
+            let url = format!(
+                "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{}",
+                zip_name
+            );
+
+            let font_cmd = format!(
+                "curl -sL {} -o {} && unzip -o {} -d ~/.local/share/fonts/NerdFonts/ && rm {}",
+                url, zip_name, zip_name, zip_name
+            );
+
+            let mut font_tool = DevTool::new(
+                font.to_string(),
+                "sh -c".to_string(),
+                "Nerd Fonts".to_string(),
+                false,
+            );
+            font_tool.run(&font_cmd);
+        }
+
+        // 3. Refresh font cache
+        logger::info("Updating font cache...");
+        let mut cache_tool = DevTool::new(
+            "NerdFonts-Cache".to_string(),
+            "sh -c".to_string(),
+            "Nerd Fonts".to_string(),
+            false,
+        );
+        cache_tool.run("fc-cache -f");
+
+        logger::info("Full Nerd Fonts suite installed successfully!");
     } else {
-        // Single font installation from direct GitHub releases
+        // Single font installation path (keeps the clean single-cmd pattern)
         let zip_name = format!("{}.zip", selected_font);
         let download_url = format!(
             "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{}",
             zip_name
         );
-        format!(
+
+        let cmd = format!(
             "mkdir -p ~/.local/share/fonts/NerdFonts && \
              curl -sL {} -o {} && \
              unzip -o {} -d ~/.local/share/fonts/NerdFonts/ && \
              rm {} && \
              fc-cache -f",
             download_url, zip_name, zip_name, zip_name
-        )
-    };
+        );
 
-    let tool_name = if is_all {
-        "All".to_string()
-    } else {
-        format!("{selected_font}")
-    };
-    let mut dev_tool = DevTool::new(
-        tool_name,
-        "sh -c".to_string(),
-        "Nerd Fonts".to_string(),
-        false,
-    );
-    dev_tool.run(&cmd);
+        let mut dev_tool = DevTool::new(
+            selected_font.clone(),
+            "sh -c".to_string(),
+            "Nerd Fonts".to_string(),
+            false,
+        );
+        dev_tool.run(&cmd);
+
+        logger::info(&format!(
+            "Nerd Font '{}' installed successfully!",
+            selected_font
+        ));
+    }
 }
