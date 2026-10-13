@@ -101,7 +101,7 @@ async fn main() {
                     Tool::Yarn => js::install_yarn(),
                     Tool::Rust => rust::install_rust(),
                     Tool::Docker => docker::install_docker(),
-                    Tool::Nerdfonts => nerd_fonts::install_nerd_fonts(),
+                    Tool::Nerdfonts => nerd_fonts::install_nerd_fonts(unattended),
                     Tool::OhMyPosh => oh_my_posh::install_oh_my_posh(),
                     Tool::Lsd => lsd::install_lsd(),
                     Tool::All => unreachable!(),
