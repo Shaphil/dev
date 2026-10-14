@@ -53,7 +53,7 @@ pub struct DevTool {
     tool: String,
     executor: String,
     description: String,
-    is_sudo: bool,
+    pub is_sudo: bool,
 }
 
 impl DevTool {
