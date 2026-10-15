@@ -7,7 +7,7 @@ pub fn install_docker() {
     let is_sudo = false;
     let package = "docker-desktop-x86_64.pkg.tar.zst";
 
-    let mut dev_tool = DevTool::new(tool, executor, description, is_sudo);
+    let mut dev_tool = DevTool::new(tool, executor.clone(), description, is_sudo);
     let mut cmd = format!(
         "curl -O https://desktop.docker.com/linux/main/amd64/{}",
         package
@@ -15,7 +15,9 @@ pub fn install_docker() {
     dev_tool.run(&cmd);
 
     dev_tool.is_sudo = true;
-    cmd = format!("pacman -U --noconfirm ./{}", package);
+    cmd = format!("{} -U --noconfirm ./{}", executor, package);
     dev_tool.run(&cmd);
-    dev_tool.check("pacman -Q docker-desktop");
+
+    cmd = format!("{} -Q docker-desktop", executor);
+    dev_tool.check(&cmd);
 }
