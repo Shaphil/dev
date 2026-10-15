@@ -147,4 +147,11 @@ impl DevTool {
             )),
         }
     }
+
+    pub fn cleanup(&self, package: &str) {
+        match std::fs::remove_file(package) {
+            Ok(_) => logger::success(&format!("package: {} have been deleted", package)),
+            Err(err) => logger::error(&format!("error deleting: {}, error: {}", package, err)),
+        }
+    }
 }

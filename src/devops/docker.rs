@@ -20,4 +20,5 @@ pub fn install_docker() {
 
     cmd = format!("{} -Q docker-desktop", executor);
     dev_tool.check(&cmd);
+    dev_tool.cleanup(package);
 }
