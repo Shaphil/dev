@@ -1,5 +1,5 @@
 use crate::utils::cmd::DevTool;
-use crate::utils::{cmd, logger};
+use crate::utils::logger;
 use colored::Colorize;
 use std::io::Write;
 use std::process::Command;
@@ -109,49 +109,66 @@ pub fn install_jdk(unattended: bool) {
     dev_tool.check("javac -version");
 }
 
-// TODO: Get version number manually and load from a `.env` or a `config.json` file
-pub fn install_openjfx() {
+pub fn install_openjfx(unattended: bool) {
     // TODO: move available versions to a `config.json` file
-    let available_versions = vec!["24.0.1", "21.0.7", "17.0.15"];
-    println!("{}", "Available JavaFX versions:".bold());
-    for (index, version) in available_versions.iter().enumerate() {
-        println!("{}. {}", index + 1, version);
-    }
+    let available_versions = vec!["27", "25.0.4", "21.0.12", "17.0.20"];
 
-    loop {
-        println!("{}", "Please choose a JavaFX version to install: ".blue());
-        io::stdout().flush().unwrap();
+    let selected_version = if unattended {
+        let version = available_versions.first().copied().unwrap_or("27");
+        logger::warning(&format!(
+            "{} {}",
+            "(unattended mode) Auto-selecting latest JavaFX version:".blue(),
+            version
+        ));
+        version
+    } else {
+        println!("{}", "Available JavaFX versions:".bold());
+        for (index, version) in available_versions.iter().enumerate() {
+            println!("{}. v{}", index + 1, version);
+        }
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Invalid choice!");
+        let chosen;
+        loop {
+            print!("{}", "Please choose a JavaFX version to install: ".blue());
+            io::stdout().flush().unwrap();
 
-        let input = input.trim();
-        match input.parse::<usize>() {
-            Ok(version) if (1..=available_versions.len()).contains(&version) => {
-                let selected_version = available_versions[version - 1];
-                println!(
-                    "{} {}{}",
-                    "Installing OpenJFX".blue(),
-                    "v",
-                    selected_version
-                );
-                let filename = format!("openjfx-{}_linux-x64_bin-sdk.zip", selected_version);
-                let url = format!(
-                    "https://download2.gluonhq.com/openjfx/{}/{}",
-                    selected_version, filename
-                );
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).expect("Invalid choice!");
 
-                println!("filename: {}", filename);
-                println!("URL: {}", url);
-
-                cmd::run_command(&["curl", "-O", &url]);
-                cmd::run_command(&["sudo", "unzip", &filename, "-d", "/usr/local"]);
-                println!("{}", "OpenJFX installation complete!".blue());
-                thread::sleep(time::Duration::from_secs(2));
-            }
-            _ => {
-                println!("{}", "Invalid choice".red());
+            let input = input.trim();
+            match input.parse::<usize>() {
+                Ok(choice) if (1..=available_versions.len()).contains(&choice) => {
+                    chosen = Some(available_versions[choice - 1]);
+                    break;
+                }
+                _ => {
+                    logger::error("Invalid choice. Please enter a valid number from the list.");
+                }
             }
         }
-    }
+        chosen.unwrap()
+    };
+
+    let filename = format!("openjfx-{}_linux-x64_bin-sdk.zip", selected_version);
+    let url = format!(
+        "https://download2.gluonhq.com/openjfx/{}/{}",
+        selected_version, filename
+    );
+
+    let mut dev_tool = DevTool::new(
+        format!("OpenJFX {}", selected_version),
+        "sh -c".to_string(),
+        "JavaFX SDK".to_string(),
+        false,
+    );
+
+    let cmd = format!(
+        "mkdir -p ~/.local/opt && curl -O {} && \
+         unzip -o {} -d ~/.local/opt && rm {}",
+        url, filename, filename
+    );
+
+    dev_tool.run(&cmd);
+
+    logger::info("OpenJFX installation complete!");
 }

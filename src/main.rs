@@ -95,7 +95,7 @@ async fn main() {
                     Tool::Uv => python::install_uv(),
                     Tool::Go => golang::install_golang(),
                     Tool::Jdk => java::install_jdk(unattended), // <--- Pass the flag here!
-                    Tool::Openjfx => java::install_openjfx(),
+                    Tool::Openjfx => java::install_openjfx(unattended),
                     Tool::Dotnet => dotnet::install_dotnet(),
                     Tool::Nodejs => js::install_nodejs(),
                     Tool::Yarn => js::install_yarn(),
