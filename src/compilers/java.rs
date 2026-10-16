@@ -158,17 +158,16 @@ pub fn install_openjfx(unattended: bool) {
     let mut dev_tool = DevTool::new(
         format!("OpenJFX {}", selected_version),
         "sh -c".to_string(),
-        "JavaFX SDK".to_string(),
+        "SDK".to_string(),
         false,
     );
 
     let cmd = format!(
         "mkdir -p ~/.local/opt && curl -O {} && \
-         unzip -o {} -d ~/.local/opt && rm {}",
-        url, filename, filename
+         unzip -o {} -d ~/.local/opt",
+        url, filename
     );
 
     dev_tool.run(&cmd);
-
-    logger::info("OpenJFX installation complete!");
+    dev_tool.cleanup(&filename);
 }
