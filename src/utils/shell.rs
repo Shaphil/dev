@@ -1,6 +1,7 @@
 use crate::utils::logger;
 use colored::Colorize;
 use std::collections::HashSet;
+use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
@@ -96,4 +97,24 @@ pub fn update_shell_configs(
     }
 
     Ok("added to `.zshrc|.bashrc`".green().to_string())
+}
+
+// Dynamically inject user-space bin paths into the current process PATH
+// so post-installation checks succeed immediately.
+pub fn ensure_user_paths() {
+    if let Ok(home) = env::var("HOME") {
+        let current_path = env::var("PATH").unwrap_or_default();
+        let extra_paths = format!(
+            "{}/bin:{}/.local/bin:{}/.cargo/bin:{}/.dotnet",
+            home, home, home, home
+        );
+
+        // Only append if they aren't already there
+        if !current_path.contains(&extra_paths) {
+            let new_path = format!("{}:{}", extra_paths, current_path);
+            unsafe {
+                env::set_var("PATH", new_path);
+            }
+        }
+    }
 }

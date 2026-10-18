@@ -64,6 +64,7 @@ enum Tool {
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
+    utils::shell::ensure_user_paths();
 
     let args = Args::parse();
     match args.command {
