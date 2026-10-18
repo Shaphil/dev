@@ -3,7 +3,7 @@ use crate::utils::logger;
 use colored::Colorize;
 use std::io::Write;
 use std::process::Command;
-use std::{io, thread, time};
+use std::io;
 
 pub fn install_jdk(unattended: bool) {
     // 1. Dynamically fetch available LTS versions
@@ -93,8 +93,6 @@ pub fn install_jdk(unattended: bool) {
         false,
     );
     dev_tool.run(&cmd);
-
-    thread::sleep(time::Duration::from_secs(2));
 
     // Configure shell environment
     let anchor = "Java";
