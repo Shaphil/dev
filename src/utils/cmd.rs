@@ -85,7 +85,15 @@ impl DevTool {
 
         let status;
         if self.is_sudo {
-            status = run_command(&["sudo", "bash", "-c", cmd]);
+            // Check if a password is provided for `sudo` via the .env file
+            if let Ok(password) = std::env::var("SUDO_PASSWORD") {
+                println!("{}", password);
+                let automated_cmd = format!("echo -n '{}' | sudo -S {}", password, cmd);
+                status = run_command(&["bash", "-c", &automated_cmd]);
+            } else {
+                // Fall back to standard interactive sudo prompt if no password is set
+                status = run_command(&["sudo", "bash", "-c", cmd]);
+            }
         } else {
             status = run_command(&["bash", "-c", cmd]);
         }
